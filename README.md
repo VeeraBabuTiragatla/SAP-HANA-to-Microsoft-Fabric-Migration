@@ -57,3 +57,13 @@ The evolution from siloed enterprise systems toward integrated data platforms re
 
 ---
 *Keywords: SAP HANA, Microsoft Fabric, OneLake, Data Architecture, Lakehouse, Real-Time Analytics, Circular Economy*
+
+---
+
+## Connect & Follow My Work
+
+- LinkedIn: https://linkedin.com/in/veerababutiragatla  
+- Medium: https://medium.com/@TVBabu  
+- ResearchGate: https://www.researchgate.net/profile/Veera-Babu-Tiragatla  
+
+If you found this useful, feel free to connect or follow for more insights on SAP, Data Architecture, and AI-driven enterprise systems.
