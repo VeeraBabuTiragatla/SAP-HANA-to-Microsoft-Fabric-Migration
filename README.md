@@ -46,7 +46,7 @@ docs/
 
 ## Run the validator
 
-Prerequisite: Python 3.9 or later. No third-party packages are required.
+Prerequisite: Python 3.10 or later. No third-party packages are required.
 
 From the repository root:
 
