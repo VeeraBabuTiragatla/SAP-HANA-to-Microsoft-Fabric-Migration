@@ -1,69 +1,106 @@
-# Beyond the Silo: Rethinking Enterprise Data Architecture through SAP HANA and Microsoft Fabric
+# SAP HANA to Microsoft Fabric Migration Validation Lab
 
-**Author:** Veera Babu Tiragatla, MBA  
-**Date:** April 10, 2026
+A small, runnable portfolio lab showing how a migration team can validate a structured order extract as it moves from an SAP HANA source context to a Microsoft Fabric target context.
 
----
+This is a technical demonstration, not a production or client implementation. **All order data is synthetic.** The CSV files represent controlled extracts; the project does not connect to, emulate, or claim access to a real SAP HANA or Microsoft Fabric environment.
 
-## Abstract
-Enterprise data platforms have reached a point where performance alone is no longer enough. Systems like SAP HANA solved the speed problem years ago—but in doing so, they also reinforced architectural boundaries that now slow down broader innovation. This paper reflects on an emerging shift: from tightly controlled, high-performance data silos toward more open, connected ecosystems enabled by platforms such as Microsoft Fabric. 
+## What the project demonstrates
 
-Rather than treating this as a purely technical migration, the discussion frames it as a gradual change in how organizations work with data itself—less movement, more access; less separation, more continuity. The paper explores architectural implications, practical constraints, and the often overlooked human dimension of this transition, supported by a conceptual case scenario and architecture model.
+The validator reconciles a synthetic source extract and target extract using `order_id` as the business key. It reports:
 
-## 1. Introduction
-For a long time, enterprise data strategy has followed a predictable pattern: build strong systems, protect them, and carefully move data out when needed. SAP HANA fits neatly into this story—fast, reliable, and deeply embedded in critical business processes.
+- source and target row counts;
+- duplicate business keys;
+- missing required fields;
+- records missing from the target;
+- unexpected target records;
+- field-level mismatches for shared business keys; and
+- a final `passed: true` or `passed: false` result.
 
-But over time, something subtle became visible. The stronger the system, the harder it became to connect it meaningfully with the rest of the data landscape. Organizations didn’t lack data. They lacked flow. 
+The supporting SQL, UAT cases, runbook and training guide show how the same checks fit into a controlled migration-validation and business-handover process.
 
-To run advanced analytics, teams built pipelines. To enable AI, they exported datasets. To create reports, they duplicated structures elsewhere. Each step worked. But collectively, it created friction—small delays, rising costs, and decisions that were always just slightly behind.
+## Conceptual architecture
 
-This paper starts from that observation and asks a simple question: **What changes if we stop moving data so much—and instead focus on accessing it where it already exists?**
+![Conceptual SAP HANA and Microsoft Fabric architecture](architecture_diagram.jpg)
 
-## 2. Background and Context
-SAP HANA introduced a major leap with its in-memory, columnar design, allowing transactional and analytical workloads to coexist efficiently (Färber et al., 2012). It reduced the need for traditional batch-based data warehousing and enabled near real-time processing within enterprise systems.
+The diagram is retained from the original repository as conceptual context. It does not represent connectivity implemented by this lab. The original architectural discussion is preserved in [Architecture Context](docs/ARCHITECTURE_CONTEXT.md).
 
-At the same time, a different idea has been gaining traction—the lakehouse model (Armbrust et al., 2020). Instead of separating storage and analytics across multiple systems, the lakehouse aims to unify them. Microsoft Fabric builds on this direction. Its architecture, particularly through OneLake, suggests a shared data layer where different tools—analytics, reporting, AI—can operate without constant data duplication.
+## Repository structure
 
-## 3. Conceptual Architecture Model
-![Conceptual Architecture](https://raw.githubusercontent.com/VeeraBabuTiragatla/SAP-HANA-to-Microsoft-Fabric-Migration/main/architecture_diagram.jpg)
+```text
+data/
+  hana_orders.csv                  Synthetic source extract
+  fabric_orders.csv                Synthetic target extract
+src/
+  __init__.py
+  validate_migration.py            Standard-library reconciliation tool
+tests/
+  test_validate_migration.py       Automated pass and controlled-failure tests
+sql/
+  reconciliation_checks.sql        Example platform-neutral reconciliation SQL
+docs/
+  UAT_TEST_CASES.md                Analyst and business acceptance cases
+  RUNBOOK.md                       Operating and exception-handling procedure
+  TRAINING_GUIDE.md                Plain-language guide to the output
+  ARCHITECTURE_CONTEXT.md          Preserved conceptual discussion
+```
 
-**Traditional Model:** Depends heavily on movement via ETL pipelines.
-**Emerging Model (HANA + Fabric):** SAP HANA remains the system of record, Microsoft Fabric acts as a unified analytics layer, and OneLake provides shared access. Instead of pipelines being the center, access becomes the center.
+## Run the validator
 
-## 4. Case Scenario: Sustainable Manufacturing (Melbourne)
-Consider a mid-sized organization focusing on sustainable packaging materials such as **bagasse**.
+Prerequisite: Python 3.10 or later. No third-party packages are required.
 
-* **Existing Setup:** Delayed reporting cycles and limited predictive capability due to data extraction silos.
-* **Integrated Architecture:** SAP data remains in place while Fabric connects through a unified layer. AI models analyze waste patterns and demand trends directly.
-* **Outcome:** A business user can evaluate projected waste reduction and material optimization without waiting for multiple data handoffs. This is a noticeable improvement in responsiveness.
+From the repository root:
 
-## 5. Discussion
-### 5.1 Reduction of Data Movement
-Integration reduces dependency on ETL-heavy workflows, lowering duplication and simplifying maintenance, though it requires careful performance design.
-### 5.2 Real-Time Decision Context
-Closer alignment between operational and analytical systems reduces lag. Decisions are made with fresher, more relevant data.
-### 5.3 Human Interaction with Data
-Data becomes less mediated, allowing business users to explore insights more directly. This redistributes how technical roles are used.
-### 5.4 Practical Constraints
-The transition introduces new complexities: Governance must be stronger, security boundaries need redesign, and skills must evolve. Architecture alone does not guarantee success.
+```bash
+python -m src.validate_migration data/hana_orders.csv data/fabric_orders.csv
+```
 
-## 6. Conclusion
-The evolution from siloed enterprise systems toward integrated data platforms reflects a broader shift. Instead of moving data repeatedly, the emphasis is shifting toward interacting with it more directly. This reduces friction, improves timeliness, and changes how decisions are made. This transition depends equally on governance, design discipline, and organizational readiness.
+The command prints a JSON report and exits with status `0` when validation passes or `1` when it fails. To save evidence for review:
 
-## References
-* **Armbrust, M., Ghodsi, A., Zaharia, M., et al. (2020).** Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores.
-* **Färber, F., Chaudhuri, S., et al. (2012).** SAP HANA Database: Data Management for Modern Business Applications.
-* **Microsoft. (2023).** Microsoft Fabric: Architecture and OneLake Overview.
+```bash
+python -m src.validate_migration data/hana_orders.csv data/fabric_orders.csv --output validation_report.json
+```
 
----
-*Keywords: SAP HANA, Microsoft Fabric, OneLake, Data Architecture, Lakehouse, Real-Time Analytics, Circular Economy*
+## Run the tests
 
----
+```bash
+python -m unittest discover -s tests -v
+```
 
-## Connect & Follow My Work
+The tests verify that a matching migration passes and that changing one target value fails with the affected order ID and field in the report.
 
-- LinkedIn: https://linkedin.com/in/veerababutiragatla  
-- Medium: https://medium.com/@TVBabu  
-- ResearchGate: https://www.researchgate.net/profile/Veera-Babu-Tiragatla  
+## Create a controlled failure
 
-If you found this useful, feel free to connect or follow for more insights on SAP, Data Architecture, and AI-driven enterprise systems.
+Work on a copy of `data/fabric_orders.csv`, change the `quantity` or `unit_price` for one order, and pass that copy as the second argument. Do not change the baseline sample if you want the standard run to remain green.
+
+Example:
+
+```bash
+python -m src.validate_migration data/hana_orders.csv path/to/fabric_orders_changed.csv
+```
+
+The report will set `passed` to `false` and list the order under `field_level_mismatches`.
+
+## Why migration validation matters
+
+A successful load is not proof that the right data arrived. Row-count, key, completeness, aggregate and field-level checks reduce the risk of silent data loss, duplication or transformation errors. Clear evidence also gives analysts and business owners a practical basis for UAT approval, reruns and escalation.
+
+## SAP HANA and Microsoft Fabric context
+
+In a real programme, extraction, security, network configuration, data types, transformation rules and Fabric ingestion would be implemented with approved enterprise services. This lab deliberately begins after extraction: `hana_orders.csv` stands in for a governed HANA source extract, while `fabric_orders.csv` stands in for the resulting Fabric table extract. This keeps the example honest, quick to run and focused on reconciliation.
+
+## Skills demonstrated
+
+- migration analysis and reconciliation design;
+- Python data validation with minimal dependencies;
+- SQL control checks and exception analysis;
+- automated testing and repeatable evidence;
+- business-oriented UAT planning;
+- operational runbook, analyst training and user handover; and
+- clear separation between a portfolio demonstration and production architecture.
+
+## Author
+
+- **Veera Babu Tiragatla**
+- Melbourne, Australia
+- [LinkedIn](https://www.linkedin.com/in/veerababutiragatla)
+- [Website](https://www.veerababutiragatla.com)

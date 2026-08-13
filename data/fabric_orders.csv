@@ -1,0 +1,7 @@
+order_id,customer_id,product,quantity,unit_price,order_date,status
+ORD-1001,CUST-201,Bagasse Food Container,120,0.48,2026-03-01,SHIPPED
+ORD-1002,CUST-202,Recycled Cardboard Carton,80,1.25,2026-03-02,PROCESSING
+ORD-1003,CUST-203,Compostable Mailer,200,0.32,2026-03-03,CONFIRMED
+ORD-1004,CUST-201,Bamboo Cutlery Set,150,0.41,2026-03-04,SHIPPED
+ORD-1005,CUST-204,Recycled Paper Wrap,60,2.10,2026-03-05,PENDING
+ORD-1006,CUST-205,Bagasse Plate,300,0.22,2026-03-06,CONFIRMED
